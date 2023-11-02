@@ -8,8 +8,7 @@ import socket
 import multiprocessing
 from ip2geotools.databases.noncommercial import DbIpCity
 
-#file_lock = Lock()
-
+# Keywords for analysis on scams
 keyword = ['phishing',
 'government agency scam',
 'online shopping fraud',
@@ -23,26 +22,26 @@ keyword = ['phishing',
 
 def crawl(url, file_path, file_lock, is_last_level):
     try:
-        # pid = os.getpid()
-        # print(f"Executing our Task on Process {pid}")
-        # response = requests.get()
-        wordcount = []
+        # Send http request to url
         response = requests.get(url, timeout=5)
+
+        # Getting information associated to current url
         response_time = response.elapsed.total_seconds()
         ip = socket.gethostbyname(response.url.split('//')[1].split('/')[0])
-        #print(ip)
-        #getregion = requests.get("https://ipinfo.io/" + ip + "/json").json()
-        #region = getregion['region']
         region = DbIpCity.get(ip, api_key='free').region
-        print(region)
         # ip = response.raw._fp.fp.raw._sock.getpeername()
         # ip = socket.gethostbyname(url)
+        
+        # Parse content for keywords
         soup = BeautifulSoup(response.content, "html.parser")
+        wordcount = []
         for word in keyword:
-            if word in response.text:
+            if word in response.text.lower():
                 wordcount.append('1')
             else:
                 wordcount.append('0')
+
+        # Parse html for unique urls
         links = []
         if not is_last_level:
             links = [a["href"] for a in soup.find_all(
@@ -50,20 +49,18 @@ def crawl(url, file_path, file_lock, is_last_level):
 
             links = list(set(links))
 
-        # Filter out already visited URLs
-        # links = [link for link in links if link not in visited_urls]
 
-        # Filter out duplicates and already visited URLs
         new_links = []
-        # Add new links to the text file with file lock
+        # Append information to the text files with file lock
         with file_lock:
-
+            # Filter out duplicates and already visited URLs
             with open(file_path, "r") as file:
                 existing_links = file.readlines()
                 for link in links:
                     if link + "\n" not in existing_links:
                         new_links.append(link)
-            #print(updated_existing_links)
+
+            # Add information of current url to visited.txt which contains information obtained from visited urls
             with open("visited.txt", "a") as file:
                 line = url + "," + ip + "," + region + "," + str(response_time)
                 for count in wordcount:
@@ -72,44 +69,29 @@ def crawl(url, file_path, file_lock, is_last_level):
                 print(line)
                 file.write(line + "\n")
 
-
-            # Add new links to the text file
+            # Add new links to links.txt which contains all the urls to parse
             with open(file_path, "a") as file:
                 for link in new_links:
                     file.write(link + "\n")
 
         return new_links
 
-
-        # ip = response.json()  # Extract the IP address from the response
-
-        # Add new links to the text file
-        #with file_lock:
-        # with open("links.txt", "a") as file:
-        #     for link in links:
-        #         file.write(link + "\n")
-
-        # return links
     except Exception as e:
         print(f"Error crawling {url}: {e}")
         return []
 
+
 # Main function to manage crawling using parallel processes
-
-
-def main(start_url, num_workers=5, max_depth=2):
+def main(num_workers=5, max_depth=2):
     print("Crawling started.")
-    start_time = time.time()
-    visited_urls = set()
-    visited_urls.add(start_url)
+    start_total_time = time.time()
     file_path = "links.txt"
 
     # Create a multiprocessing manager to create a shared lock
     manager = multiprocessing.Manager()
     file_lock = manager.Lock()
 
-    with open("links.txt", "w") as file:
-        file.write(start_url + "\n")
+    # Initialise visited.txt with the field names
     with open("visited.txt", "w") as file:
         title = "URL,IP,Region,Response_time"
         for word in keyword:
@@ -122,8 +104,9 @@ def main(start_url, num_workers=5, max_depth=2):
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
         while depth <= max_depth:
 
+            # Crawl initial set of urls, then batch of urls returned from previous depth subsequently
             print(f"Processing depth {depth}...")
-            start_time = time.time()
+            start_depth_time = time.time()
             next_pointer = len(open(file_path).readlines())
             futures = [executor.submit(crawl, url, file_path, file_lock, depth==max_depth) for url in open(file_path).readlines()[pointer:]]
             pointer = next_pointer
@@ -131,16 +114,18 @@ def main(start_url, num_workers=5, max_depth=2):
             for future in concurrent.futures.as_completed(futures):
                 links = future.result()
 
-            
+            print(f"Depth {depth} processed in {time.time() - start_depth_time:.2f} seconds.")
             depth += 1
-            print(
-                f"Depth {depth} processed in {time.time() - start_time:.2f} seconds.")
+
     print("Crawling completed.")
-    print(f"Crawling completed in {time.time() - start_time:.2f} seconds.")
+    print(f"Crawling completed in {time.time() - start_total_time:.2f} seconds.")
 
-
-# Example usage
+# Driver
 if __name__ == "__main__":
-    # Replace this with your desired starting URL
-    start_url = "https://www.safewise.com/online-scams-to-watch-for-in-2023/"
-    main(start_url, num_workers=5, max_depth=2)
+    # Added this part for convenience but remove when time for submission and just put the initial urls in the file as stated in the pdf
+    # Add starting urls to the array
+    starting_urls = ["https://www.safewise.com/online-scams-to-watch-for-in-2023/"]
+    with open("links.txt", "w") as file:
+        for start_url in starting_urls:
+            file.write(start_url + "\n")
+    main(num_workers=5, max_depth=2)
