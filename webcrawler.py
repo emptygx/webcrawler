@@ -16,6 +16,7 @@ def crawl(url, file_path, file_lock, is_last_level):
         # pid = os.getpid()
         # print(f"Executing our Task on Process {pid}")
         # response = requests.get()
+        wordcount = []
         response = requests.get(url, timeout=5)
         response_time = response.elapsed.total_seconds()
         ip = socket.gethostbyname(response.url.split('//')[1].split('/')[0])
@@ -26,6 +27,11 @@ def crawl(url, file_path, file_lock, is_last_level):
         # ip = response.raw._fp.fp.raw._sock.getpeername()
         # ip = socket.gethostbyname(url)
         soup = BeautifulSoup(response.content, "html.parser")
+        for word in keyword:
+            if word in response.text:
+                wordcount.append('1')
+            else:
+                wordcount.append('0')
         links = []
         if not is_last_level:
             links = [a["href"] for a in soup.find_all(
@@ -49,6 +55,8 @@ def crawl(url, file_path, file_lock, is_last_level):
             #print(updated_existing_links)
             with open("visited.txt", "a") as file:
                 line = url + "," + ip + "," + region + "," + str(response_time)
+                for count in wordcount:
+                    line = line + "," + count
                 line = line.replace("\n","")
                 print(line)
                 file.write(line + "\n")
@@ -92,7 +100,10 @@ def main(start_url, num_workers=5, max_depth=2):
     with open("links.txt", "w") as file:
         file.write(start_url + "\n")
     with open("visited.txt", "w") as file:
-        file.write("URL, IP, Region, Response_time\n")
+        title = "URL,IP,Region,Response_time"
+        for word in keyword:
+            title = title + "," + word
+        file.write(title + "\n")
 
     pointer = 0
 
