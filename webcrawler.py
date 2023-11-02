@@ -48,7 +48,7 @@ def crawl(url, file_path, file_lock, is_last_level):
                         new_links.append(link)
             #print(updated_existing_links)
             with open("visited.txt", "a") as file:
-                line = url + "," + region + "," + str(response_time)
+                line = url + "," + ip + "," + region + "," + str(response_time)
                 line = line.replace("\n","")
                 print(line)
                 file.write(line + "\n")
@@ -78,7 +78,7 @@ def crawl(url, file_path, file_lock, is_last_level):
 # Main function to manage crawling using parallel processes
 
 
-def main(start_url, num_workers=5, max_depth=3):
+def main(start_url, num_workers=5, max_depth=2):
     print("Crawling started.")
     start_time = time.time()
     visited_urls = set()
@@ -92,7 +92,7 @@ def main(start_url, num_workers=5, max_depth=3):
     with open("links.txt", "w") as file:
         file.write(start_url + "\n")
     with open("visited.txt", "w") as file:
-        file.write("URL, Region, Response_time\n")
+        file.write("URL, IP, Region, Response_time\n")
 
     pointer = 0
 
