@@ -6,6 +6,7 @@ import time
 import os
 import socket
 import multiprocessing
+from ip2geotools.databases.noncommercial import DbIpCity
 
 #file_lock = Lock()
 
@@ -30,8 +31,9 @@ def crawl(url, file_path, file_lock, is_last_level):
         response_time = response.elapsed.total_seconds()
         ip = socket.gethostbyname(response.url.split('//')[1].split('/')[0])
         #print(ip)
-        getregion = requests.get("https://ipinfo.io/" + ip + "/json").json()
-        region = getregion['region']
+        #getregion = requests.get("https://ipinfo.io/" + ip + "/json").json()
+        #region = getregion['region']
+        region = DbIpCity.get(ip, api_key='free').region
         print(region)
         # ip = response.raw._fp.fp.raw._sock.getpeername()
         # ip = socket.gethostbyname(url)
