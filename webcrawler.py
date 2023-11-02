@@ -6,6 +6,7 @@ import time
 import os
 import socket
 import multiprocessing
+import urllib.request
 from ip2geotools.databases.noncommercial import DbIpCity
 
 # Keywords for analysis on scams
@@ -23,6 +24,7 @@ keyword = ['phishing',
 def crawl(url, file_path, file_lock, is_last_level):
     try:
         # Send http request to url
+        # time.sleep(5) --> to keep request rate low
         response = requests.get(url, timeout=5)
 
         # Getting information associated to current url
@@ -35,11 +37,13 @@ def crawl(url, file_path, file_lock, is_last_level):
         # Parse content for keywords
         soup = BeautifulSoup(response.content, "html.parser")
         wordcount = []
+        page_content = urllib.request.urlopen(url).read().decode('utf-8')
         for word in keyword:
-            if word in response.text.lower():
-                wordcount.append('1')
-            else:
+            position = page_content.find(word)
+            if position == -1:
                 wordcount.append('0')
+            else:
+                wordcount.append('1')
 
         # Parse html for unique urls
         links = []
