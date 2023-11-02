@@ -9,39 +9,50 @@ import multiprocessing
 
 #file_lock = Lock()
 
-def crawl(url, file_path, file_lock):
+keyword = ['phishing', 'love', 'romance', 'friend', 'side load', 'sideloaded', 'promotion', 'discount', 'blackmail']
+
+def crawl(url, file_path, file_lock, is_last_level):
     try:
         # pid = os.getpid()
         # print(f"Executing our Task on Process {pid}")
         # response = requests.get()
         response = requests.get(url, timeout=5)
-        # response_time = response.elapsed.total_seconds()
+        response_time = response.elapsed.total_seconds()
         ip = socket.gethostbyname(response.url.split('//')[1].split('/')[0])
         #print(ip)
         getregion = requests.get("https://ipinfo.io/" + ip + "/json").json()
         region = getregion['region']
-        #print(region)
+        print(region)
         # ip = response.raw._fp.fp.raw._sock.getpeername()
         # ip = socket.gethostbyname(url)
         soup = BeautifulSoup(response.content, "html.parser")
-        links = [a["href"] for a in soup.find_all(
-            "a", href=True) if a["href"].startswith("http")]
-        
-        links = list(set(links))
+        links = []
+        if not is_last_level:
+            links = [a["href"] for a in soup.find_all(
+                "a", href=True) if a["href"].startswith("http")]
+
+            links = list(set(links))
 
         # Filter out already visited URLs
         # links = [link for link in links if link not in visited_urls]
 
         # Filter out duplicates and already visited URLs
         new_links = []
-        
         # Add new links to the text file with file lock
         with file_lock:
+
             with open(file_path, "r") as file:
                 existing_links = file.readlines()
                 for link in links:
                     if link + "\n" not in existing_links:
                         new_links.append(link)
+            #print(updated_existing_links)
+            with open("visited.txt", "a") as file:
+                line = url + "," + region + "," + str(response_time)
+                line = line.replace("\n","")
+                print(line)
+                file.write(line + "\n")
+
 
             # Add new links to the text file
             with open(file_path, "a") as file:
@@ -80,6 +91,8 @@ def main(start_url, num_workers=5, max_depth=3):
 
     with open("links.txt", "w") as file:
         file.write(start_url + "\n")
+    with open("visited.txt", "w") as file:
+        file.write("URL, Region, Response_time\n")
 
     pointer = 0
 
@@ -90,7 +103,7 @@ def main(start_url, num_workers=5, max_depth=3):
             print(f"Processing depth {depth}...")
             start_time = time.time()
             next_pointer = len(open(file_path).readlines())
-            futures = [executor.submit(crawl, url, file_path, file_lock) for url in open(file_path).readlines()[pointer:]]
+            futures = [executor.submit(crawl, url, file_path, file_lock, depth==max_depth) for url in open(file_path).readlines()[pointer:]]
             pointer = next_pointer
 
             for future in concurrent.futures.as_completed(futures):
