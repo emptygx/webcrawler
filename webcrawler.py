@@ -9,7 +9,16 @@ import multiprocessing
 
 #file_lock = Lock()
 
-keyword = ['phishing', 'love', 'romance', 'friend', 'side load', 'sideloaded', 'promotion', 'discount', 'blackmail']
+keyword = ['phishing',
+'government agency scam',
+'online shopping fraud',
+'recruitment scam',
+'sextortion',
+'lottery scam',
+'banking scam',
+'malware scam',
+'advance fee scam',
+'ponzi scheme']
 
 def crawl(url, file_path, file_lock, is_last_level):
     try:
