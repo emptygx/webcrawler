@@ -6,6 +6,7 @@ import time
 import os
 import socket
 import multiprocessing
+import urllib.request
 from ip2geotools.databases.noncommercial import DbIpCity
 
 #file_lock = Lock()
@@ -30,19 +31,17 @@ def crawl(url, file_path, file_lock, is_last_level):
         response = requests.get(url, timeout=5)
         response_time = response.elapsed.total_seconds()
         ip = socket.gethostbyname(response.url.split('//')[1].split('/')[0])
-        #print(ip)
-        #getregion = requests.get("https://ipinfo.io/" + ip + "/json").json()
-        #region = getregion['region']
         region = DbIpCity.get(ip, api_key='free').region
-        print(region)
         # ip = response.raw._fp.fp.raw._sock.getpeername()
         # ip = socket.gethostbyname(url)
         soup = BeautifulSoup(response.content, "html.parser")
+        page_content = urllib.request.urlopen(url).read().decode('utf-8')
         for word in keyword:
-            if word in response.text:
-                wordcount.append('1')
-            else:
+            position = page_content.find(word)
+            if position == -1:
                 wordcount.append('0')
+            else:
+                wordcount.append('1')
         links = []
         if not is_last_level:
             links = [a["href"] for a in soup.find_all(
@@ -142,5 +141,5 @@ def main(start_url, num_workers=5, max_depth=2):
 # Example usage
 if __name__ == "__main__":
     # Replace this with your desired starting URL
-    start_url = "https://www.safewise.com/online-scams-to-watch-for-in-2023/"
+    start_url = "https://en.wikipedia.org/wiki/Lottery_scam"
     main(start_url, num_workers=5, max_depth=2)
