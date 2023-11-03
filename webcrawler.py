@@ -11,15 +11,15 @@ from ip2geotools.databases.noncommercial import DbIpCity
 
 # Keywords for analysis on scams
 keyword = ['phishing',
-'government agency scam',
-'online shopping fraud',
-'recruitment scam',
+'government',
+'online shopping',
+'job',
 'sextortion',
-'lottery scam',
-'banking scam',
-'malware scam',
-'advance fee scam',
-'ponzi scheme']
+'lottery',
+'banking',
+'malware',
+'advance fee',
+'ponzi']
 
 def crawl(url, file_path, file_lock, is_last_level):
     try:
@@ -31,6 +31,8 @@ def crawl(url, file_path, file_lock, is_last_level):
         response_time = response.elapsed.total_seconds()
         ip = socket.gethostbyname(response.url.split('//')[1].split('/')[0])
         region = DbIpCity.get(ip, api_key='free').region
+        if region == None:
+            region = ""
         # ip = response.raw._fp.fp.raw._sock.getpeername()
         # ip = socket.gethostbyname(url)
         
@@ -38,6 +40,9 @@ def crawl(url, file_path, file_lock, is_last_level):
         soup = BeautifulSoup(response.content, "html.parser")
         wordcount = []
         page_content = urllib.request.urlopen(url).read().decode('utf-8')
+        if page_content.find('scam') == -1 and page_content.find('fraud') == -1:
+            print('irrelevant link - exiting')
+            return
         for word in keyword:
             position = page_content.find(word)
             if position == -1:

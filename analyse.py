@@ -1,14 +1,14 @@
 region_keyword_counts = {}
-keywords = ['phishing',
-'government agency scam',
-'online shopping fraud',
-'recruitment scam',
+keyword = ['phishing',
+'government',
+'online shopping',
+'job',
 'sextortion',
-'lottery scam',
-'banking scam',
-'malware scam',
-'advance fee scam',
-'ponzi scheme']
+'lottery',
+'banking',
+'malware',
+'advance fee',
+'ponzi']
 
 with open('visited.txt', 'r') as file:
     file.readline()
