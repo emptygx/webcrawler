@@ -1,5 +1,5 @@
 region_keyword_counts = {}
-keyword = ['phishing',
+keywords = ['phishing',
 'government',
 'online shopping',
 'job',

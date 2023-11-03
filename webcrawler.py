@@ -32,7 +32,7 @@ def crawl(url, file_path, file_lock, is_last_level):
         ip = socket.gethostbyname(response.url.split('//')[1].split('/')[0])
         region = DbIpCity.get(ip, api_key='free').region
         if region == None:
-            region = ""
+            region = " "
         # ip = response.raw._fp.fp.raw._sock.getpeername()
         # ip = socket.gethostbyname(url)
         
@@ -133,7 +133,16 @@ def main(num_workers=5, max_depth=2):
 if __name__ == "__main__":
     # Added this part for convenience but remove when time for submission and just put the initial urls in the file as stated in the pdf
     # Add starting urls to the array
-    starting_urls = ["https://www.safewise.com/online-scams-to-watch-for-in-2023/"]
+    starting_urls = ["https://www.safewise.com/online-scams-to-watch-for-in-2023/", 
+                     "https://consumer.ftc.gov/articles/how-avoid-government-impersonator-scam#:~:text=Scammers%20send%20emails%20and%20text,Simply%20delete%20the%20message",
+                     "https://www.police.gov.sg/media-room/news/20230415_police_advisory_on_resurgence_of_government_official_impersonation_scam",
+                     "https://www.fdacs.gov/Consumer-Resources/Scams-and-Fraud/Online-Shopping-Scams",
+                     "https://www.todayonline.com/singapore/i-responded-scammers-offering-me-lucrative-job-offers-was-what-happened-1795246",
+                     "https://www.cbc.ca/news/canada/sextortion-social-media-apps-victims-1.7014262",
+                     "https://www.straitstimes.com/singapore/at-least-55-lose-over-500k-this-year-to-lottery-scam-involving-religious-figures",
+                     "https://www.gfsc.gg/consumers/scams/banking-scams",
+                     "https://en.wikipedia.org/wiki/Advance-fee_scam",
+                     "https://www.investor.gov/protect-your-investments/fraud/types-fraud/ponzi-scheme#:~:text=A%20Ponzi%20scheme%20is%20an,with%20little%20or%20no%20risk"]
     with open("links.txt", "w") as file:
         for start_url in starting_urls:
             file.write(start_url + "\n")
