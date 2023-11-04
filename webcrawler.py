@@ -71,9 +71,9 @@ def crawl(url, file_path, file_lock, is_last_level):
 
             # Add information of current url to visited.txt which contains information obtained from visited urls
             with open("visited.txt", "a") as file:
-                line = url + "," + ip + "," + region + "," + str(response_time)
+                line = url + "|" + ip + "|" + region + "|" + str(response_time)
                 for count in wordcount:
-                    line = line + "," + count
+                    line = line + "|" + count
                 line = line.replace("\n","")
                 print(line)
                 file.write(line + "\n")
@@ -102,9 +102,9 @@ def main(num_workers=5, max_depth=2):
 
     # Initialise visited.txt with the field names
     with open("visited.txt", "w") as file:
-        title = "URL,IP,Region,Response_time"
+        title = "URL|IP|Region|Response_time"
         for word in keyword:
-            title = title + "," + word
+            title = title + "|" + word
         file.write(title + "\n")
 
     pointer = 0
