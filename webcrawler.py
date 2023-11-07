@@ -39,17 +39,15 @@ def crawl(url, file_path, file_lock, is_last_level):
         
         # Parse content for keywords
         soup = BeautifulSoup(response.content, "html.parser")
-        wordcount = []
-        page_content = urllib.request.urlopen(url).read().decode('utf-8')
-        if page_content.find('scam') == -1 and page_content.find('fraud') == -1:
+        if 'scam' not in response.text and 'fraud' not in response.text:
             print('irrelevant link - exiting')
             return
+        wordcount = []
         for word in keyword:
-            position = page_content.find(word)
-            if position == -1:
-                wordcount.append('0')
-            else:
+            if word in response.text:
                 wordcount.append('1')
+            else:
+                wordcount.append('0')
 
         # Parse html for unique urls
         links = []
