@@ -24,7 +24,7 @@ keyword = ['phishing',
 def crawl(url, file_path, file_lock, is_last_level):
     try:
         # Send http request to url
-        url = url.rstrip('%0A')
+        url = url.strip()
         time.sleep(5)
         response = requests.get(url, timeout=5)
 
@@ -37,6 +37,8 @@ def crawl(url, file_path, file_lock, is_last_level):
         
         # Parse content for keywords
         soup = BeautifulSoup(response.content, "html.parser")
+        wordcount = []
+        #page_content = urllib.request.urlopen(url).read().decode('utf-8')
         page_content = response.text.lower()
         if 'scam' not in page_content and 'fraud' not in page_content:
             print('irrelevant link - exiting')
@@ -90,7 +92,7 @@ def crawl(url, file_path, file_lock, is_last_level):
 
 
 # Main function to manage crawling using parallel processes
-def main(num_workers=5, max_depth=2):
+def main(num_workers=12, max_depth=2):
     print("Crawling started.")
     start_total_time = time.time()
     file_path = "links.txt"
