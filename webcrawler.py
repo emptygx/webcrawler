@@ -24,7 +24,8 @@ keyword = ['phishing',
 def crawl(url, file_path, file_lock, is_last_level):
     try:
         # Send http request to url
-        # time.sleep(5) --> to keep request rate low
+        url = url.rstrip('%0A')
+        time.sleep(5)
         response = requests.get(url, timeout=5)
 
         # Getting information associated to current url
@@ -81,6 +82,7 @@ def crawl(url, file_path, file_lock, is_last_level):
             # Add new links to links.txt which contains all the urls to parse
             with open(file_path, "a") as file:
                 for link in new_links:
+                    link.rstrip('%0A')
                     file.write(link + "\n")
 
         return new_links
@@ -146,4 +148,4 @@ if __name__ == "__main__":
     with open("links.txt", "w") as file:
         for start_url in starting_urls:
             file.write(start_url + "\n")
-    main(num_workers=5, max_depth=2)
+    main(num_workers=5, max_depth=9)
