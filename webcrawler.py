@@ -28,21 +28,6 @@ def crawl(url, file_path, file_lock, is_last_level):
         response_time = response.elapsed.total_seconds()
         ip = socket.gethostbyname(response.url.split('//')[1].split('/')[0])
         ##region = DbIpCity.get(ip, api_key='free').region
-        ip_api_res = requests.get(f'http://ip-api.com/json/{ip}').json()
-        # location_data = {
-        #     "ip": ip_address,
-        #     "city": response.get("city"),
-        #     "region": response.get("region"),
-        #     "country": response.get("country_name")
-        # }
-        if ip_api_res.get("status") == "fail":
-            print(ip_api_res.get("message"))
-        country = ip_api_res.get("country")
-        region = ip_api_res.get("regionName")
-        if region == None:
-            region = "Unknown"
-        if country == None:
-            country = "Unknown"
         
         # Parse content for keywords
         soup = BeautifulSoup(response.content, "html.parser")
@@ -58,6 +43,16 @@ def crawl(url, file_path, file_lock, is_last_level):
                 wordcount.append('1')
             else:
                 wordcount.append('0')
+
+        ip_api_res = requests.get(f'http://ip-api.com/json/{ip}').json()
+        if ip_api_res.get("status") == "fail":
+            print(ip_api_res.get("message"))
+        country = ip_api_res.get("country")
+        region = ip_api_res.get("regionName")
+        if region == None:
+            region = "Unknown"
+        if country == None:
+            country = "Unknown"
 
         # Parse html for unique urls
         links = []
