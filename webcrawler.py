@@ -25,24 +25,27 @@ def crawl(url, file_path, file_lock, is_last_level):
     try:
         # Send http request to url
         url = url.strip()
-        time.sleep(9)
         response = requests.get(url, timeout=5)
 
         # Getting information associated to current url
         response_time = response.elapsed.total_seconds()
         ip = socket.gethostbyname(response.url.split('//')[1].split('/')[0])
-        #region = DbIpCity.get(ip, api_key='free').region
-        ip_api_res = requests.get(f'https://ipapi.co/{ip}/json/').json()
+        ##region = DbIpCity.get(ip, api_key='free').region
+        ip_api_res = requests.get(f'http://ip-api.com/json/{ip}').json()
         # location_data = {
         #     "ip": ip_address,
         #     "city": response.get("city"),
         #     "region": response.get("region"),
         #     "country": response.get("country_name")
         # }
-        country = ip_api_res.get("country_name")
-        region = ip_api_res.get("region")
+        if ip_api_res.get("status") == "fail":
+            print(ip_api_res.get("message"))
+        country = ip_api_res.get("country")
+        region = ip_api_res.get("regionName")
         if region == None:
-            region = " "
+            region = "Unknown"
+        if country == None:
+            country = "Unknown"
         
         # Parse content for keywords
         soup = BeautifulSoup(response.content, "html.parser")
@@ -127,7 +130,17 @@ def main(num_workers=12, max_depth=2):
             print(f"Processing depth {depth}...")
             start_depth_time = time.time()
             next_pointer = len(open(file_path).readlines())
-            futures = [executor.submit(crawl, url, file_path, file_lock, depth==max_depth) for url in open(file_path).readlines()[pointer:]]
+            urls = open(file_path).readlines()[pointer:]
+            # Create a list to store the Future objects
+            futures = []
+            for url in urls:
+                # Submit the task to the executor
+                future = executor.submit(crawl, url, file_path, file_lock, depth == max_depth)
+                futures.append(future)
+                
+                # Introduce a delay before assigning the next task
+                time.sleep(2)
+            
             pointer = next_pointer
 
             for future in concurrent.futures.as_completed(futures):
