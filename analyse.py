@@ -1,8 +1,8 @@
 region_keyword_counts = {}
 keywords = ['phishing',
-'government',
+'impersonation',
 'online shopping',
-'job',
+'recruitment',
 'sextortion',
 'lottery',
 'banking',
