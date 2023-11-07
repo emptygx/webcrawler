@@ -81,7 +81,7 @@ def crawl(url, file_path, file_lock, is_last_level):
             # Add new links to links.txt which contains all the urls to parse
             with open(file_path, "a") as file:
                 for link in new_links:
-                    link.rstrip('%0A')
+                    #link.rstrip('%0A')
                     file.write(link + "\n")
 
         return new_links
