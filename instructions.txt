@@ -1,5 +1,4 @@
 Install the necessary libraries with the following commands:
 `pip install beautifulsoup4` or `pip3 install beautifulsoup4`
-`pip install ip2geotools` or `pip3 install ip2geotools`
 
 Run the code with `python webcrawler.py` or `python3 webcrawler.py`

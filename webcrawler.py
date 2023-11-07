@@ -3,11 +3,8 @@ from bs4 import BeautifulSoup
 from concurrent.futures import ProcessPoolExecutor
 import concurrent.futures
 import time
-import os
 import socket
 import multiprocessing
-import urllib.request
-from ip2geotools.databases.noncommercial import DbIpCity
 
 # Keywords for analysis on scams
 keyword = ['phishing',
