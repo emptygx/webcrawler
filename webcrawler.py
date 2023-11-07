@@ -13,7 +13,7 @@ from ip2geotools.databases.noncommercial import DbIpCity
 keyword = ['phishing',
 'impersonation',
 'online shopping',
-'recruitment',
+'job',
 'sextortion',
 'lottery',
 'banking',
