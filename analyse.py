@@ -1,8 +1,8 @@
 region_keyword_counts = {}
 keywords = ['phishing',
-'government',
+'impersonation',
 'online shopping',
-'job',
+'recruitment',
 'sextortion',
 'lottery',
 'banking',
@@ -14,7 +14,7 @@ with open('visited.txt', 'r') as file:
     file.readline()
     lines = file.readlines()
     for line in lines:
-        info = line.strip().split(',')
+        info = line.strip().split('|')
 
         r = info[2].strip()
         for i in range(10):
