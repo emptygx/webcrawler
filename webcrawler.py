@@ -25,13 +25,22 @@ def crawl(url, file_path, file_lock, is_last_level):
     try:
         # Send http request to url
         url = url.strip()
-        time.sleep(5)
+        time.sleep(9)
         response = requests.get(url, timeout=5)
 
         # Getting information associated to current url
         response_time = response.elapsed.total_seconds()
         ip = socket.gethostbyname(response.url.split('//')[1].split('/')[0])
-        region = DbIpCity.get(ip, api_key='free').region
+        #region = DbIpCity.get(ip, api_key='free').region
+        ip_api_res = requests.get(f'https://ipapi.co/{ip}/json/').json()
+        # location_data = {
+        #     "ip": ip_address,
+        #     "city": response.get("city"),
+        #     "region": response.get("region"),
+        #     "country": response.get("country_name")
+        # }
+        country = ip_api_res.get("country_name")
+        region = ip_api_res.get("region")
         if region == None:
             region = " "
         
@@ -71,7 +80,7 @@ def crawl(url, file_path, file_lock, is_last_level):
 
             # Add information of current url to visited.txt which contains information obtained from visited urls
             with open("visited.txt", "a") as file:
-                line = url + "|" + ip + "|" + region + "|" + str(response_time)
+                line = url + "|" + ip + "|" + country + "|" + region + "|" + str(response_time)
                 for count in wordcount:
                     line = line + "|" + count
                 line = line.replace("\n","")
@@ -103,7 +112,7 @@ def main(num_workers=12, max_depth=2):
 
     # Initialise visited.txt with the field names
     with open("visited.txt", "w") as file:
-        title = "URL|IP|Region|Response_time"
+        title = "URL|IP|Country|Region|Response_time"
         for word in keyword:
             title = title + "|" + word
         file.write(title + "\n")
