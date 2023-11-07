@@ -11,9 +11,9 @@ from ip2geotools.databases.noncommercial import DbIpCity
 
 # Keywords for analysis on scams
 keyword = ['phishing',
-'government',
+'impersonation',
 'online shopping',
-'job',
+'recruitment',
 'sextortion',
 'lottery',
 'banking',
@@ -34,17 +34,16 @@ def crawl(url, file_path, file_lock, is_last_level):
         region = DbIpCity.get(ip, api_key='free').region
         if region == None:
             region = " "
-        # ip = response.raw._fp.fp.raw._sock.getpeername()
-        # ip = socket.gethostbyname(url)
         
         # Parse content for keywords
         soup = BeautifulSoup(response.content, "html.parser")
-        if 'scam' not in response.text and 'fraud' not in response.text:
+        page_content = response.text.lower()
+        if 'scam' not in page_content and 'fraud' not in page_content:
             print('irrelevant link - exiting')
             return
         wordcount = []
         for word in keyword:
-            if word in response.text:
+            if word in page_content:
                 wordcount.append('1')
             else:
                 wordcount.append('0')
