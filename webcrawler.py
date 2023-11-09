@@ -23,16 +23,10 @@ def crawl(url, file_path, file_lock, is_last_level):
         # Send http request to url
         url = url.strip()
         response = requests.get(url, timeout=5)
-
-        # Getting information associated to current url
-        response_time = response.elapsed.total_seconds()
-        ip = socket.gethostbyname(response.url.split('//')[1].split('/')[0])
-        ##region = DbIpCity.get(ip, api_key='free').region
         
         # Parse content for keywords
         soup = BeautifulSoup(response.content, "html.parser")
         wordcount = []
-        #page_content = urllib.request.urlopen(url).read().decode('utf-8')
         page_content = response.text.lower()
         if 'scam' not in page_content and 'fraud' not in page_content:
             print('irrelevant link - exiting')
@@ -44,6 +38,9 @@ def crawl(url, file_path, file_lock, is_last_level):
             else:
                 wordcount.append('0')
 
+        # Getting information (response time, country, region) associated to current url
+        response_time = response.elapsed.total_seconds()
+        ip = socket.gethostbyname(response.url.split('//')[1].split('/')[0])
         ip_api_res = requests.get(f'http://ip-api.com/json/{ip}').json()
         if ip_api_res.get("status") == "fail":
             print(ip_api_res.get("message"))
@@ -54,7 +51,7 @@ def crawl(url, file_path, file_lock, is_last_level):
         if country == None:
             country = "Unknown"
 
-        # Parse html for unique urls
+        # Parse html for unique urls if not at max depth yet
         links = []
         if not is_last_level:
             links = [a["href"] for a in soup.find_all(
@@ -85,7 +82,6 @@ def crawl(url, file_path, file_lock, is_last_level):
             # Add new links to links.txt which contains all the urls to parse
             with open(file_path, "a") as file:
                 for link in new_links:
-                    #link.rstrip('%0A')
                     file.write(link + "\n")
 
         return new_links
@@ -112,6 +108,7 @@ def main(num_workers=12, max_depth=2):
             title = title + "|" + word
         file.write(title + "\n")
 
+    # Pointer to keep track of oldest uncrawled link position
     pointer = 0
 
     depth = 1
@@ -123,8 +120,10 @@ def main(num_workers=12, max_depth=2):
             start_depth_time = time.time()
             next_pointer = len(open(file_path).readlines())
             urls = open(file_path).readlines()[pointer:]
+            
             # Create a list to store the Future objects
             futures = []
+            
             for url in urls:
                 # Submit the task to the executor
                 future = executor.submit(crawl, url, file_path, file_lock, depth == max_depth)
@@ -135,6 +134,7 @@ def main(num_workers=12, max_depth=2):
             
             pointer = next_pointer
 
+            # Wait for all current depth's urls to be crawled
             for future in concurrent.futures.as_completed(futures):
                 links = future.result()
 
@@ -146,8 +146,7 @@ def main(num_workers=12, max_depth=2):
 
 # Driver
 if __name__ == "__main__":
-    # Added this part for convenience but remove when time for submission and just put the initial urls in the file as stated in the pdf
-    # Add starting urls to the array
+    # Initialise links.txt with starting urls
     starting_urls = ["https://www.safewise.com/online-scams-to-watch-for-in-2023/", 
                      "https://consumer.ftc.gov/articles/how-avoid-government-impersonator-scam#:~:text=Scammers%20send%20emails%20and%20text,Simply%20delete%20the%20message",
                      "https://www.police.gov.sg/media-room/news/20230415_police_advisory_on_resurgence_of_government_official_impersonation_scam",
@@ -161,4 +160,6 @@ if __name__ == "__main__":
     with open("links.txt", "w") as file:
         for start_url in starting_urls:
             file.write(start_url + "\n")
-    main(num_workers=5, max_depth=9)
+    
+    # Run main function to start crawling
+    main(num_workers=5, max_depth=10)
