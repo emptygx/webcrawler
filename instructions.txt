@@ -1,4 +1,9 @@
 Install the necessary libraries with the following commands:
 `pip install beautifulsoup4` or `pip3 install beautifulsoup4`
 
+Change num_workers and max_depth paramenters of main function as desired 
+Change initial set of urls if needed
+
 Run the code with `python webcrawler.py` or `python3 webcrawler.py`
+Full list of links found will be in links.txt
+Information on relevant links crawled will be in visited.txt
